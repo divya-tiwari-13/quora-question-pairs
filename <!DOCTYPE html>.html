@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quora Question Pairs - Model Performance Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a top-to-bottom narrative journey that mirrors the iterative model improvement process described in the report. It starts with an overview, then presents an interactive "Model Progression" section where users can click through the different stages (Baseline, Basic Features, Advanced Features). This structure was chosen because the report's core message is about the *impact* of progressive feature engineering. An interactive, stage-by-stage reveal allows users to actively explore this progression, making the relationship between feature complexity and accuracy much clearer than a static table. The user flow is linear and intuitive, guiding them from the problem to the final, most effective solution. -->
+    <!-- Visualization & Content Choices: 
+        1. Report Info: Model performance data (accuracy scores for each model/notebook). Goal: Compare. Viz/Presentation Method: Vertical Bar Chart. Interaction: The chart's data dynamically updates when the user clicks a button for a specific project stage. Justification: A bar chart is the most effective way to compare performance metrics across different models. Making it dynamic and user-controlled directly links the feature engineering stage to the performance outcome, enhancing comprehension. Library/Method: Chart.js (Canvas).
+        2. Report Info: Key Findings and Conclusion text. Goal: Inform/Explain. Viz/Presentation Method: Dynamically updated text blocks. Interaction: The text content changes to correspond with the selected stage in the interactive chart section. Justification: This provides context-sensitive information, preventing information overload and keeping the user focused on the results of the currently viewed stage. Library/Method: Vanilla JS updating element innerHTML.
+        3. Report Info: Methodology (iterative process). Goal: Organize. Viz/Presentation Method: A simple, non-interactive visual timeline/flow diagram. Justification: This provides a clear, high-level map of the project's structure, orienting the user before they dive into the interactive details. Library/Method: Styled HTML/CSS with Tailwind Flexbox. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #4A4A4A;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 450px;
+            }
+        }
+        .nav-btn {
+            transition: all 0.3s ease;
+        }
+        .nav-btn.active {
+            background-color: #A67B5B;
+            color: #FFFFFF;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+        .nav-btn:not(.active):hover {
+            background-color: #E9E2D9;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="antialiased">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#4A4A4A] tracking-tight">Quora Question Pair Similarity</h1>
+            <p class="mt-4 text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">An interactive analysis of model performance based on progressive feature engineering.</p>
+        </header>
+
+        <main>
+            <section id="introduction" class="mb-20 max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-6 text-[#A67B5B]">The Challenge</h2>
+                <p class="text-lg text-gray-700 leading-relaxed text-center">
+                    The goal of this project is to determine if a pair of questions on Quora are duplicates. This is a classic binary classification problem in Natural Language Processing. The following dashboard visualizes an iterative approach, starting with a simple baseline and progressively adding more complex features to enhance model accuracy. Explore the different stages to see how feature engineering impacts performance.
+                </p>
+            </section>
+            
+            <section id="interactive-dashboard" class="bg-white rounded-2xl shadow-lg p-6 md:p-10">
+                <h2 class="text-3xl font-bold text-center mb-4 text-[#A67B5B]">Model Progression Journey</h2>
+                <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">
+                    This section details the project's iterative methodology. Each step introduces more sophisticated features, building upon the previous one. Click on each stage to update the chart and see the corresponding findings and techniques used.
+                </p>
+
+                <div id="navigation" class="flex flex-wrap justify-center gap-2 md:gap-4 mb-10">
+                    <button data-stage="baseline" class="nav-btn active text-sm md:text-base font-semibold py-2 px-4 rounded-full bg-gray-200 text-gray-700">1. Baseline (Bag of Words)</button>
+                    <button data-stage="basic" class="nav-btn text-sm md:text-base font-semibold py-2 px-4 rounded-full bg-gray-200 text-gray-700">2. Adding Basic Features</button>
+                    <button data-stage="advanced" class="nav-btn text-sm md:text-base font-semibold py-2 px-4 rounded-full bg-gray-200 text-gray-700">3. Advanced Features & Preprocessing</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
+                    <div class="lg:col-span-3">
+                        <div class="chart-container">
+                            <canvas id="performanceChart"></canvas>
+                        </div>
+                    </div>
+                    <div id="content-display" class="lg:col-span-2 mt-8 lg:mt-0">
+                    </div>
+                </div>
+            </section>
+
+            <section id="conclusion" class="mt-20 max-w-4xl mx-auto">
+                 <h2 class="text-3xl font-bold text-center mb-6 text-[#A67B5B]">Overall Conclusion</h2>
+                <p class="text-lg text-gray-700 leading-relaxed text-justify bg-white p-8 rounded-2xl shadow-md">
+                    The project clearly demonstrates the immense value of feature engineering in this NLP task. While a simple Bag of Words model provides a reasonable starting point, it's the addition of manually crafted, domain-specific features that yields the most significant improvements in performance. The final model, which combines text preprocessing with a rich set of basic and advanced features, stands out as the most effective approach. This underscores the principle that for many machine learning problems, thoughtfully engineered features are often more critical than the choice of algorithm alone.
+                </p>
+            </section>
+        </main>
+
+        <footer class="text-center mt-20 py-6 border-t border-gray-200">
+            <p class="text-gray-500">Interactive Report generated from project analysis.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chartData = {
+                baseline: {
+                    labels: ['Logistic Regression', 'Random Forest', 'XGBoost'],
+                    accuracies: [75.3, 74.5, 74.0],
+                    finding: {
+                        title: "Finding 1: Baseline Performance",
+                        text: "A simple Bag of Words model provides a decent baseline. On this sparse feature set, Logistic Regression performs slightly better than tree-based models, achieving around 75% accuracy."
+                    },
+                    features: {
+                        title: "Approach: Bag of Words (BoW)",
+                        list: ["Converts questions into a sparse matrix of token counts."]
+                    }
+                },
+                basic: {
+                    labels: ['Random Forest', 'XGBoost'],
+                    accuracies: [81.3, 83.2],
+                    finding: {
+                        title: "Finding 2: Impact of Basic Features",
+                        text: "Adding basic, manually engineered features provides a significant boost in performance. The accuracy jumps by approximately 8-10% with an XGBoost model, demonstrating the value of providing more explicit signals about the relationship between questions."
+                    },
+                    features: {
+                        title: "Approach: BoW + Basic Features",
+                        list: ["All BoW features", "Lexical and structural features (e.g., word overlap, length differences)."]
+                    }
+                },
+                advanced: {
+                    labels: ['Random Forest'],
+                    accuracies: [85.9],
+                    finding: {
+                        title: "Finding 3: Advanced Features & Preprocessing",
+                        text: "The best performance is achieved by combining text preprocessing with a richer set of advanced features. Cleaning text and adding fuzzy matching and detailed token-based statistics allows the Random Forest model to reach nearly 86% accuracy."
+                    },
+                    features: {
+                        title: "Approach: BoW + Advanced Features",
+                        list: ["All previous features", "Text preprocessing (stopwords, stemming)", "Fuzzy string matching", "Advanced token statistics."]
+                    }
+                }
+            };
+
+            const ctx = document.getElementById('performanceChart').getContext('2d');
+            let performanceChart;
+
+            const contentDisplay = document.getElementById('content-display');
+            const navButtons = document.querySelectorAll('.nav-btn');
+
+            function updateChart(stage) {
+                const data = chartData[stage];
+                if (performanceChart) {
+                    performanceChart.destroy();
+                }
+                performanceChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Test Accuracy (%)',
+                            data: data.accuracies,
+                            backgroundColor: '#C39C7F',
+                            borderColor: '#A67B5B',
+                            borderWidth: 2,
+                            borderRadius: 5,
+                            barPercentage: 0.6,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        scales: {
+                            x: {
+                                beginAtZero: false,
+                                min: 70,
+                                max: 90,
+                                grid: {
+                                    color: '#F0EBE3'
+                                },
+                                ticks: {
+                                    font: {
+                                        family: "'Inter', sans-serif",
+                                        weight: '500'
+                                    },
+                                    callback: function(value) {
+                                        return value + '%';
+                                    }
+                                }
+                            },
+                            y: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        family: "'Inter', sans-serif",
+                                        size: 14,
+                                        weight: '500'
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: `Accuracy for Stage: ${stage.charAt(0).toUpperCase() + stage.slice(1)}`,
+                                font: {
+                                    size: 18,
+                                    family: "'Inter', sans-serif",
+                                    weight: '600'
+                                },
+                                padding: {
+                                    bottom: 20
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Accuracy: ${context.raw.toFixed(1)}%`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateContent(stage) {
+                const data = chartData[stage];
+                const featuresHtml = data.features.list.map(item => `<li class="flex items-start"><span class="text-[#A67B5B] mr-2 mt-1">◆</span>${item}</li>`).join('');
+                
+                contentDisplay.innerHTML = `
+                    <div class="fade-in bg-[#F9F6F2] p-6 rounded-xl">
+                        <h3 class="font-bold text-xl mb-2 text-gray-800">${data.finding.title}</h3>
+                        <p class="text-gray-600 mb-6">${data.finding.text}</p>
+                        <h4 class="font-bold text-lg mb-3 text-gray-800">${data.features.title}</h4>
+                        <ul class="space-y-2 text-gray-600">
+                            ${featuresHtml}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const stage = button.dataset.stage;
+                    
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    updateChart(stage);
+                    updateContent(stage);
+                });
+            });
+
+            updateChart('baseline');
+            updateContent('baseline');
+        });
+    </script>
+</body>
+</html>
