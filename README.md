@@ -1,6 +1,7 @@
 # quora-question-pairs
 Dataset Link - https://www.kaggle.com/c/quora-question-pairs
-https://g.co/gemini/share/708b740d650d
+
+website: https://divya-tiwari-13.github.io/NLP-Quora/
 
 # Quora Question Pair Similarity Competition
   This repository contains the code and analysis for the Quora Question Pairs competition. The goal of this competition is to identify whether a pair of questions asked on Quora are duplicates or not. This is a binary classification problem.
@@ -8,13 +9,13 @@ https://g.co/gemini/share/708b740d650d
   This project explores various approaches, starting from a simple Bag of Words (BoW) model and progressively adding more complex features to improve the classification accuracy.
 
 ### Files Overview
-  • initial_EDA.ipynb: This notebook performs an initial Exploratory Data Analysis on the Quora Question Pairs dataset. It delves into the distribution of duplicate and non-duplicate pairs, analyzes the question lengths, and explores the text data to gain insights before feature engineering and modeling.
+  • [initial_EDA.ipynb](https://github.com/divya-tiwari-13/quora-question-pairs/blob/main/initial_EDA.ipynb): This notebook performs an initial Exploratory Data Analysis on the Quora Question Pairs dataset. It delves into the distribution of duplicate and non-duplicate pairs, analyzes the question lengths, and explores the text data to gain insights before feature engineering and modeling.
 
-  • only_bow.ipynb: This notebook implements a baseline model using a simple Bag of Words (BoW) approach. The questions are converted into a sparse matrix of token counts, which is then used to train various classification models.
+  • [only_bow.ipynb](https://github.com/divya-tiwari-13/quora-question-pairs/blob/main/only_bow.ipynb): This notebook implements a baseline model using a simple Bag of Words (BoW) approach. The questions are converted into a sparse matrix of token counts, which is then used to train various classification models.
 
-  • bow_with_basic_features.ipynb: This version builds upon the simple BoW model by incorporating several basic, handcrafted features. These features provide more information about the lexical and structural relationship between the two questions.
+  • [bow_with_basic_features.ipynb](https://github.com/divya-tiwari-13/quora-question-pairs/blob/main/bow_with_basic_features.ipynb): This version builds upon the simple BoW model by incorporating several basic, handcrafted features. These features provide more information about the lexical and structural relationship between the two questions.
 
-  • bow_with_preprocessing_and_advanced_features.ipynb: This is the most comprehensive approach. It includes text preprocessing steps (like removing stopwords, stemming) and adds more advanced features related to word overlap, fuzzy string matching, and token-based statistics before applying the Bag of Words vectorization.
+  • [bow_with_preprocessing_and_advanced_features.ipynb](https://github.com/divya-tiwari-13/quora-question-pairs/blob/main/bow_with_preprocessing_and_advanced_features.ipynb): This is the most comprehensive approach. It includes text preprocessing steps (like removing stopwords, stemming) and adds more advanced features related to word overlap, fuzzy string matching, and token-based statistics before applying the Bag of Words vectorization.
 
 ### Methodology and Results
   The project follows an iterative approach to model building. We started with a simple baseline and gradually added complexity in the form of feature engineering to see how it impacts performance. The primary metric used for evaluation is Accuracy.
